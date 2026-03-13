@@ -33,37 +33,18 @@ body{
 <script src="Build/UnityLoader.js"></script>
 
 <script>
-async function fetchAsBlobUrl(path) {
-    const arrayBuffer = await fetch(path).then(r => r.arrayBuffer());
-    return URL.createObjectURL(new Blob([arrayBuffer]));
-}
-  
-async function loadUnityBlobs() {
+async function loadAndMergeData() {
     const part1 = await fetch("Build/baldi webgl.data.unityweb.part1").then(r => r.arrayBuffer());
     const part2 = await fetch("Build/baldi webgl.data.unityweb.part2").then(r => r.arrayBuffer());
     const merged = new Uint8Array(part1.byteLength + part2.byteLength);
     merged.set(new Uint8Array(part1), 0);
     merged.set(new Uint8Array(part2), part1.byteLength);
-    const dataBlobUrl = URL.createObjectURL(new Blob([merged]));
-    const codeBlobUrl = await fetchAsBlobUrl("Build/baldi webgl.wasm.code.unityweb");
-    const frameworkBlobUrl = await fetchAsBlobUrl("Build/baldi webgl.wasm.framework.unityweb");
-    return { dataBlobUrl, codeBlobUrl, frameworkBlobUrl };
+    return URL.createObjectURL(new Blob([merged]));
 }
 
 async function startUnity() {
-    const blobs = await loadUnityBlobs();
     const json = await fetch("Build/baldi webgl.json").then(r => r.json());
-    json.dataUrl = blobs.dataBlobUrl;
-    json.wasmCodeUrl = blobs.codeBlobUrl;
-    json.wasmFrameworkUrl = blobs.frameworkBlobUrl;
-    window.Module = {
-        locateFile: function(path) {
-            if (path.endsWith(".data.unityweb")) return dataBlobUrl;
-            if (path.endsWith(".wasm.code.unityweb")) return codeBlobUrl;
-            if (path.endsWith(".wasm.framework.unityweb")) return frameworkBlobUrl;
-            return "Build/" + path;
-        }
-    };
+    json.dataUrl = await loadAndMergeData();
     UnityLoader.instantiate(
         "unityContainer",
         URL.createObjectURL(new Blob([JSON.stringify(json)]), {type:"application/json"}),
