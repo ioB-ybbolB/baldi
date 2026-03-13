@@ -56,6 +56,14 @@ async function startUnity() {
     json.dataUrl = blobs.dataBlobUrl;
     json.wasmCodeUrl = blobs.codeBlobUrl;
     json.wasmFrameworkUrl = blobs.frameworkBlobUrl;
+    window.Module = {
+        locateFile: function(path) {
+            if (path.endsWith(".data.unityweb")) return dataBlobUrl;
+            if (path.endsWith(".wasm.code.unityweb")) return codeBlobUrl;
+            if (path.endsWith(".wasm.framework.unityweb")) return frameworkBlobUrl;
+            return "Build/" + path;
+        }
+    };
     UnityLoader.instantiate(
         "unityContainer",
         URL.createObjectURL(new Blob([JSON.stringify(json)]), {type:"application/json"}),
