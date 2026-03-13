@@ -5,27 +5,27 @@
 <title>Baldi's Basics</title>
 
 <style>
-html, body {
-  margin: 0;
-  height: 100%;
-  background: black;
+html,body{
+  margin:0;
+  height:100%;
+  background:black;
 }
 
-body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+body{
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 
-#unityContainer {
-  width: 100vw;
-  height: 100vh;
+#unityContainer{
+  width:100vw;
+  height:100vh;
 }
 
-#unityContainer canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
+#unityContainer canvas{
+  width:100%;
+  height:100%;
+  display:block;
 }
 </style>
 
@@ -39,22 +39,21 @@ async function loadAndMergeData() {
     const merged = new Uint8Array(part1.byteLength + part2.byteLength);
     merged.set(new Uint8Array(part1), 0);
     merged.set(new Uint8Array(part2), part1.byteLength);
-    return URL.createObjectURL(new Blob([merged]));
+    const dataBlobUrl = URL.createObjectURL(new Blob([merged]));
+    const codeBlobUrl = await fetchAsBlobUrl("Build/baldi webgl.wasm.code.unityweb");
+    const frameworkBlobUrl = await fetchAsBlobUrl("Build/baldi webgl.wasm.framework.unityweb");
+    return { dataBlobUrl, codeBlobUrl, frameworkBlobUrl };
 }
 
 async function startUnity() {
+    const blobs = await loadUnityBlobs();
     const json = await fetch("Build/baldi webgl.json").then(r => r.json());
-    const dataBlobUrl = await loadAndMergeData();
-    json.dataUrl = dataBlobUrl;
-    window.Module = {
-        locateFile: function(path) {
-            if (path.endsWith(".data.unityweb")) return dataBlobUrl;
-            return "Build/" + path;
-        }
-    };
+    json.dataUrl = blobs.dataBlobUrl;
+    json.wasmCodeUrl = blobs.codeBlobUrl;
+    json.wasmFrameworkUrl = blobs.frameworkBlobUrl;
     UnityLoader.instantiate(
         "unityContainer",
-        URL.createObjectURL(new Blob([JSON.stringify(json)]), { type: "application/json" }),
+        URL.createObjectURL(new Blob([JSON.stringify(json)]), {type:"application/json"}),
         { onProgress: UnityProgress }
     );
 }
