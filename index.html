@@ -34,8 +34,8 @@ body{
 
 <script>
 async function loadAndMergeData() {
-    const part1 = await fetch("Build/data.unityweb.part1").then(r => r.arrayBuffer());
-    const part2 = await fetch("Build/data.unityweb.part2").then(r => r.arrayBuffer());
+    const part1 = await fetch("Build/baldi webgl.data.unityweb.part1").then(r => r.arrayBuffer());
+    const part2 = await fetch("Build/baldi webgl.data.unityweb.part2").then(r => r.arrayBuffer());
     const merged = new Uint8Array(part1.byteLength + part2.byteLength);
     merged.set(new Uint8Array(part1), 0);
     merged.set(new Uint8Array(part2), part1.byteLength);
