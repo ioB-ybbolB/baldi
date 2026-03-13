@@ -33,6 +33,11 @@ body{
 <script src="Build/UnityLoader.js"></script>
 
 <script>
+async function fetchAsBlobUrl(path) {
+    const arrayBuffer = await fetch(path).then(r => r.arrayBuffer());
+    return URL.createObjectURL(new Blob([arrayBuffer]));
+}
+  
 async function loadUnityBlobs() {
     const part1 = await fetch("Build/baldi webgl.data.unityweb.part1").then(r => r.arrayBuffer());
     const part2 = await fetch("Build/baldi webgl.data.unityweb.part2").then(r => r.arrayBuffer());
